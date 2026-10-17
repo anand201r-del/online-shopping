@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h3 class="mb-4">📊 Admin Dashboard</h3>
+
+    <!-- 🔢 STATS CARDS -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card stat-card text-center shadow-sm p-3">
+                <h2><i class="fa fa-box text-primary"></i></h2>
+                <h3>{{ total_products }}</h3>
+                <p class="mb-0">Products</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card stat-card text-center shadow-sm p-3">
+                <h2><i class="fa fa-users text-info"></i></h2>
+                <h3>{{ total_users }}</h3>
+                <p class="mb-0">Users</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card stat-card text-center shadow-sm p-3">
+                <h2><i class="fa fa-shopping-cart text-warning"></i></h2>
+                <h3>{{ total_orders }}</h3>
+                <p class="mb-0">Order lines</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card stat-card text-center shadow-sm p-3">
+                <h2><i class="fa fa-indian-rupee-sign text-success"></i></h2>
+                <h3>₹{{ '{:,.0f}'.format(revenue) }}</h3>
+                <p class="mb-0">Revenue</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- ➕ ADD PRODUCT -->
+        <div class="col-lg-4">
+            <div class="card p-3 shadow-sm h-100">
+                <h5 class="mb-3">➕ Add Product</h5>
+
+                <form action="{{ url_for('add_product') }}" method="POST" enctype="multipart/form-data">
+                    <input class="form-control mb-2" type="text" name="name" placeholder="Product name" required>
+                    <div class="row g-2 mb-2">
+                        <div class="col"><input class="form-control" type="number" step="0.01" min="0" name="price" placeholder="Price (₹)" required></div>
+                        <div class="col"><input class="form-control" type="number" min="0" name="stock" placeholder="Stock" required></div>
+                    </div>
+                    <input class="form-control mb-2" type="text" name="category" placeholder="Category (e.g. Electronics)" list="categoryList">
+                    <datalist id="categoryList">
+                        {% for p in products|map(attribute=5)|unique %}{% if p %}<option value="{{ p }}">{% endif %}{% endfor %}
+                    </datalist>
+                    <label class="form-label small text-muted mb-1">Image</label>
+                    <input class="form-control mb-3" type="file" name="image" accept="image/*">
+                    <button class="btn btn-brand w-100">Add Product</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 📊 CHART -->
+        <div class="col-lg-8">
+            <div class="card p-3 shadow-sm h-100">
+                <h5 class="mb-3">📦 Stock Overview</h5>
+                {% if names %}
+                <canvas id="stockChart" height="140"></canvas>
+                {% else %}
+                <p class="text-muted">No products yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 🗂 MANAGE PRODUCTS -->
+    <div class="card p-3 shadow-sm mt-4">
+        <h5 class="mb-3">🗂 Manage Products</h5>
+        <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr><th></th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th class="text-end">Actions</th></tr>
+            </thead>
+            <tbody>
+            {% for p in products %}
+                <tr>
+                    <td><img src="{{ p[4] | img(p[1], p[5]) }}" class="cart-thumb-sm" alt=""></td>
+                    <td><a href="{{ url_for('product_detail', id=p[0]) }}">{{ p[1] }}</a></td>
+                    <td>{{ p[5] or 'General' }}</td>
+                    <td>₹{{ '{:,.2f}'.format(p[2]) }}</td>
+                    <td>
+                        {% if p[3] == 0 %}<span class="badge bg-danger">0</span>
+                        {% elif p[3] < 5 %}<span class="badge bg-warning text-dark">{{ p[3] }}</span>
+                        {% else %}{{ p[3] }}{% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a href="{{ url_for('edit_product', id=p[0]) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <form action="{{ url_for('delete_product', id=p[0]) }}" method="POST" class="d-inline"
+                              onsubmit="return confirm('Delete {{ p[1]|e }}?');">
+                            <button class="btn btn-sm btn-outline-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="6" class="text-center text-muted">No products yet — add one above.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+
+    <!-- 🧾 RECENT ORDERS -->
+    <div class="card p-3 shadow-sm mt-4">
+        <h5 class="mb-3">🧾 Recent Orders</h5>
+        {% if recent_orders %}
+        <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+            <thead><tr><th>User</th><th>Product</th><th>Qty</th><th>Total</th><th>Date</th></tr></thead>
+            <tbody>
+            {% for o in recent_orders %}
+                <tr>
+                    <td>{{ o[0] }}</td><td>{{ o[1] }}</td><td>{{ o[2] }}</td>
+                    <td>₹{{ '{:,.2f}'.format(o[3]) }}</td>
+                    <td>{{ o[4].strftime('%d %b %Y, %I:%M %p') if o[4] else '' }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">No orders yet.</p>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if names %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+const stocks = {{ stocks | tojson }};
+new Chart(document.getElementById('stockChart'), {
+    type: 'bar',
+    data: {
+        labels: {{ names | tojson }},
+        datasets: [{
+            label: 'Stock',
+            data: stocks,
+            backgroundColor: stocks.map(s => s === 0 ? '#dc3545' : s < 5 ? '#ffc107' : '#0d6efd'),
+            borderRadius: 4
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

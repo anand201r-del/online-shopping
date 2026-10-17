@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% from "_macros.html" import money %}
+{% block title %}{{ product[1] }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ url_for('home') }}">Home</a></li>
+            {% if product[5] %}
+            <li class="breadcrumb-item"><a href="{{ url_for('home', category=product[5]) }}">{{ product[5] }}</a></li>
+            {% endif %}
+            <li class="breadcrumb-item active">{{ product[1] }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+
+        <!-- 🖼️ IMAGE -->
+        <div class="col-lg-6">
+            <div class="detail-media position-relative">
+                <img src="{{ product[4] | img(product[1], product[5]) }}" alt="{{ product[1] }}">
+            </div>
+        </div>
+
+        <!-- 📄 DETAILS -->
+        <div class="col-lg-6">
+            <div class="panel h-100">
+
+                <span class="product-cat">{{ product[5] or 'General' }}</span>
+                <h1 class="h2 mt-1 mb-3">{{ product[1] }}</h1>
+
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <span class="price fs-2">{{ money(product[2]) }}</span>
+                </div>
+
+                {% if product[3] == 0 %}
+                    <span class="pill pill-out"><i class="fa-solid fa-circle-xmark"></i> Out of stock</span>
+                {% elif product[3] < 5 %}
+                    <span class="pill pill-low"><i class="fa-solid fa-fire"></i> Hurry, only {{ product[3] }} left</span>
+                {% else %}
+                    <span class="pill pill-ok"><i class="fa-solid fa-circle-check"></i> In stock</span>
+                {% endif %}
+
+                <hr class="my-4">
+
+                {% if product[3] > 0 %}
+                <form action="{{ url_for('add_to_cart', id=product[0]) }}" method="POST">
+                    <label class="form-label fw-semibold small text-muted">Quantity</label>
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <div class="qty">
+                            <button type="button" onclick="step(-1)" aria-label="Decrease">−</button>
+                            <input id="qty" type="number" name="quantity" value="1" min="1" max="{{ product[3] }}">
+                            <button type="button" onclick="step(1)" aria-label="Increase">+</button>
+                        </div>
+                        <button class="btn btn-brand btn-lg flex-grow-1">
+                            <i class="fa-solid fa-cart-plus me-2"></i>Add to cart
+                        </button>
+                        <a href="{{ url_for('toggle_wishlist', id=product[0]) }}"
+                           class="btn btn-lg heart-lg js-heart {{ 'on' if wished }}" data-id="{{ product[0] }}"
+                           title="{{ 'Remove from wishlist' if wished else 'Save to wishlist' }}">
+                            <i class="fa-{{ 'solid' if wished else 'regular' }} fa-heart"></i>
+                        </a>
+                    </div>
+                </form>
+                {% else %}
+                <a href="{{ url_for('toggle_wishlist', id=product[0]) }}" class="btn {{ 'btn-danger' if wished else 'btn-outline-danger' }}">
+                    <i class="fa-{{ 'solid' if wished else 'regular' }} fa-heart me-2"></i>
+                    {{ 'Saved to wishlist' if wished else 'Save to wishlist' }}
+                </a>
+                {% endif %}
+
+                <ul class="perks mt-4">
+                    <li><i class="fa-solid fa-truck-fast"></i> Free delivery on every order</li>
+                    <li><i class="fa-solid fa-money-bill-wave"></i> Cash on Delivery available</li>
+                    <li><i class="fa-solid fa-shield-halved"></i> Secure checkout</li>
+                </ul>
+
+                {% if is_admin %}
+                <a href="{{ url_for('edit_product', id=product[0]) }}" class="btn btn-light btn-sm mt-4">
+                    <i class="fa-solid fa-pen me-1"></i> Edit product
+                </a>
+                {% endif %}
+
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function step(d) {
+    const q = document.getElementById("qty");
+    const v = Math.min(Math.max(1, (parseInt(q.value) || 1) + d), parseInt(q.max));
+    q.value = v;
+}
+</script>
+{% endblock %}

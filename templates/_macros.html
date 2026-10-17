@@ -1,0 +1,40 @@
+{# Reusable product card.  p = (id, name, price, stock, image, category) #}
+{% macro product_card(p, wished=False) %}
+<div class="product-card">
+    <a href="{{ url_for('product_detail', id=p[0]) }}" class="product-media">
+        <img src="{{ p[4] | img(p[1], p[5]) }}" alt="{{ p[1] }}" loading="lazy">
+        {% if p[3] == 0 %}<span class="stock-tag out">Out of stock</span>
+        {% elif p[3] < 5 %}<span class="stock-tag low">Only {{ p[3] }} left</span>{% endif %}
+    </a>
+    <a href="{{ url_for('toggle_wishlist', id=p[0]) }}" class="heart-btn js-heart {{ 'on' if wished }}" data-id="{{ p[0] }}"
+       title="{{ 'Remove from wishlist' if wished else 'Add to wishlist' }}" aria-label="Toggle wishlist">
+        <i class="fa-{{ 'solid' if wished else 'regular' }} fa-heart"></i>
+    </a>
+
+    <div class="product-body">
+        <span class="product-cat">{{ p[5] or 'General' }}</span>
+        <a href="{{ url_for('product_detail', id=p[0]) }}" class="product-name">{{ p[1] }}</a>
+        <div class="price product-price mb-1">₹{{ '{:,.0f}'.format(p[2]) if p[2] == p[2]|int else '{:,.2f}'.format(p[2]) }}</div>
+        <div class="product-meta"><i class="fa-solid fa-truck-fast"></i> Free delivery</div>
+
+        <div class="product-actions">
+            {% if p[3] > 0 %}
+            <a href="{{ url_for('add_to_cart', id=p[0]) }}" class="btn btn-brand btn-sm py-2 js-cart">
+                <i class="fa-solid fa-cart-plus me-1"></i> Add to cart
+            </a>
+            {% else %}
+            <button class="btn btn-light btn-sm py-2" disabled>Sold out</button>
+            {% endif %}
+            {% if is_admin %}
+            <a href="{{ url_for('edit_product', id=p[0]) }}" class="btn btn-light btn-sm py-2 flex-grow-0" title="Edit product">
+                <i class="fa-solid fa-pen"></i>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{% macro money(v) -%}
+₹{{ '{:,.0f}'.format(v) if v == v|int else '{:,.2f}'.format(v) }}
+{%- endmacro %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Error {{ code }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5 text-center" style="max-width: 560px;">
+    <div class="card shadow p-5">
+        <h1 class="display-4 fw-bold text-muted">{{ code }}</h1>
+        <p class="lead">{{ message }}</p>
+        <a href="{{ url_for('home') }}" class="btn btn-brand mt-2">Go Home</a>
+    </div>
+</div>
+{% endblock %}

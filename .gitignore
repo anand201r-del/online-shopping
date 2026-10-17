@@ -1,0 +1,21 @@
+# secrets
+.env
+
+# virtual environment
+venv/
+.venv/
+
+# python cache
+__pycache__/
+*.pyc
+
+# editor / OS
+.vscode/
+.DS_Store
+Thumbs.db
+
+# old auto-downloaded photos (no longer used)
+templates/static/images/product-*
+
+# local database backups / logs
+*.log

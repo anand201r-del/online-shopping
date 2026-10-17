@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Checkout{% endblock %}
+
+{% block content %}
+<div class="container mt-4" style="max-width: 960px;">
+
+    <h3 class="mb-4">💳 Checkout</h3>
+
+    <div class="row g-4">
+
+        <!-- 🧾 ORDER SUMMARY -->
+        <div class="col-md-5 order-md-2">
+            <div class="card shadow-sm p-3">
+                <h5 class="mb-3">Order Summary</h5>
+                <ul class="list-group list-group-flush mb-3">
+                    {% for item in items %}
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span>{{ item[1] }} <span class="text-muted">× {{ item[3] }}</span></span>
+                        <span>₹{{ '{:,.2f}'.format(item[2] * item[3]) }}</span>
+                    </li>
+                    {% endfor %}
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span>Delivery</span><span class="text-success">FREE</span>
+                    </li>
+                </ul>
+                <div class="d-flex justify-content-between fs-5 fw-bold">
+                    <span>Total</span><span class="price">₹{{ '{:,.2f}'.format(total) }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 💳 PAYMENT METHOD -->
+        <div class="col-md-7 order-md-1">
+            <div class="card shadow-sm p-4">
+                <h5 class="mb-3">Choose Payment Method</h5>
+
+                <form action="{{ url_for('place_order') }}" method="POST" id="checkoutForm">
+
+                    {% for key, label in methods.items() %}
+                    <div class="form-check pay-option border rounded p-3 mb-2">
+                        <input class="form-check-input ms-0 me-2" type="radio" name="method" id="m_{{ key }}"
+                               value="{{ key }}" {% if loop.first %}checked{% endif %}>
+                        <label class="form-check-label fw-semibold" for="m_{{ key }}">
+                            {% if key == 'cod' %}💵{% elif key == 'upi' %}📱{% else %}💳{% endif %} {{ label }}
+                        </label>
+                    </div>
+                    {% endfor %}
+
+                    <!-- UPI DETAILS -->
+                    <div id="upiBox" class="pay-details mt-3 d-none">
+                        <label class="form-label">UPI ID</label>
+                        <input class="form-control" type="text" name="upi_id" placeholder="yourname@okaxis">
+                    </div>
+
+                    <!-- CARD DETAILS -->
+                    <div id="cardBox" class="pay-details mt-3 d-none">
+                        <label class="form-label">Card Number</label>
+                        <input class="form-control mb-2" type="text" name="card_number" inputmode="numeric"
+                               maxlength="23" placeholder="1234 5678 9012 3456">
+                        <div class="row g-2">
+                            <div class="col"><input class="form-control" type="text" placeholder="MM/YY" maxlength="5"></div>
+                            <div class="col"><input class="form-control" type="password" placeholder="CVV" maxlength="4"></div>
+                        </div>
+                    </div>
+
+                    <p class="small text-muted mt-3 mb-3">
+                        ℹ️ This is a demo store — UPI and card payments are simulated and no money is charged.
+                    </p>
+
+                    <button class="btn btn-brand btn-lg w-100" id="placeBtn">
+                        Place Order · ₹{{ '{:,.2f}'.format(total) }}
+                    </button>
+                    <a href="{{ url_for('cart') }}" class="btn btn-link w-100 mt-1">← Back to cart</a>
+
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// show the extra fields for the chosen payment method
+const upiBox = document.getElementById("upiBox");
+const cardBox = document.getElementById("cardBox");
+
+function updateMethod() {
+    const m = document.querySelector('input[name="method"]:checked').value;
+    upiBox.classList.toggle("d-none", m !== "upi");
+    cardBox.classList.toggle("d-none", m !== "card");
+}
+document.querySelectorAll('input[name="method"]').forEach(r => r.addEventListener("change", updateMethod));
+updateMethod();
+
+// stop double orders from double clicks
+document.getElementById("checkoutForm").addEventListener("submit", () => {
+    const b = document.getElementById("placeBtn");
+    setTimeout(() => { b.disabled = true; b.textContent = "Placing order…"; }, 0);
+});
+</script>
+{% endblock %}

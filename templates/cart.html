@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% from "_macros.html" import money %}
+{% block title %}Cart{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h3 class="mb-3">Shopping Cart</h3>
+
+    {% if items %}
+    <div class="row g-4">
+
+        <!-- 🛒 ITEMS -->
+        <div class="col-lg-8">
+            <div class="panel py-2">
+                {% for item in items %}
+                {# item = (id, name, price, qty, image, stock) #}
+                <div class="cart-item">
+                    <a href="{{ url_for('product_detail', id=item[0]) }}">
+                        <img src="{{ item[4] | img(item[1], item[6]) }}" class="cart-thumb" alt="{{ item[1] }}">
+                    </a>
+
+                    <div class="flex-grow-1 min-w-0">
+                        <a href="{{ url_for('product_detail', id=item[0]) }}" class="fw-bold text-dark text-decoration-none d-block text-truncate">{{ item[1] }}</a>
+                        <div class="text-muted small mb-2">{{ money(item[2]) }} each
+                            {% if item[3] >= item[5] %}<span class="text-warning fw-semibold ms-2">max stock</span>{% endif %}
+                        </div>
+
+                        <div class="d-flex align-items-center gap-3">
+                            <form action="{{ url_for('update_cart', id=item[0]) }}" method="POST" class="qty qty-sm">
+                                <button name="quantity" value="{{ item[3] - 1 }}" aria-label="Decrease">
+                                    {% if item[3] == 1 %}<i class="fa-regular fa-trash-can"></i>{% else %}−{% endif %}
+                                </button>
+                                <span>{{ item[3] }}</span>
+                                <button name="quantity" value="{{ item[3] + 1 }}" aria-label="Increase" {{ 'disabled' if item[3] >= item[5] }}>+</button>
+                            </form>
+                            <a href="{{ url_for('remove_from_cart', id=item[0]) }}" class="link-muted">Remove</a>
+                        </div>
+                    </div>
+
+                    <div class="price text-end">{{ money(item[2] * item[3]) }}</div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <a href="{{ url_for('home') }}" class="btn btn-light mt-3"><i class="fa-solid fa-arrow-left me-2"></i>Continue shopping</a>
+        </div>
+
+        <!-- 💰 SUMMARY -->
+        <div class="col-lg-4">
+            <div class="panel summary">
+                <h5 class="mb-3">Order Summary</h5>
+                <div class="row-line"><span>Items ({{ cart_count }})</span><span class="text-dark">{{ money(total) }}</span></div>
+                <div class="row-line"><span>Delivery</span><span class="text-success fw-semibold">FREE</span></div>
+                <div class="total-line"><span>Total</span><span>{{ money(total) }}</span></div>
+                <a href="{{ url_for('checkout') }}" class="btn btn-brand btn-lg w-100 mt-3">
+                    Checkout <i class="fa-solid fa-arrow-right ms-2"></i>
+                </a>
+                <p class="small text-muted text-center mt-3 mb-0"><i class="fa-solid fa-lock me-1"></i> Cash on Delivery, UPI and cards accepted</p>
+            </div>
+        </div>
+
+    </div>
+
+    {% else %}
+    <div class="panel empty">
+        <div class="empty-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+        <h4>Your cart is empty</h4>
+        <p class="text-muted">Looks like you haven't added anything yet.</p>
+        <a href="{{ url_for('home') }}" class="btn btn-brand mt-2">Start shopping</a>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

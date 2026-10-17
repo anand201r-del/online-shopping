@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Edit {{ product[1] }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4" style="max-width: 640px;">
+
+    <div class="card shadow-lg p-4">
+
+        <h3 class="mb-4 text-center">✏️ Update Product</h3>
+
+        <form action="{{ url_for('update_product', id=product[0]) }}" method="POST" enctype="multipart/form-data">
+
+            <!-- PRODUCT NAME -->
+            <div class="mb-3">
+                <label class="form-label">Product Name</label>
+                <input class="form-control" type="text" name="name" value="{{ product[1] }}" required>
+            </div>
+
+            <div class="row">
+                <!-- PRICE -->
+                <div class="col mb-3">
+                    <label class="form-label">Price (₹)</label>
+                    <input class="form-control" type="number" step="0.01" min="0" name="price" value="{{ product[2] }}" required>
+                </div>
+
+                <!-- STOCK -->
+                <div class="col mb-3">
+                    <label class="form-label">Stock</label>
+                    <input class="form-control" type="number" min="0" name="stock" value="{{ product[3] }}" required>
+                </div>
+            </div>
+
+            <!-- CATEGORY -->
+            <div class="mb-3">
+                <label class="form-label">Category</label>
+                <input class="form-control" type="text" name="category" value="{{ product[5] or '' }}">
+            </div>
+
+            <!-- IMAGE -->
+            <div class="mb-3">
+                <label class="form-label">Image <span class="text-muted small">(leave empty to keep the current one)</span></label>
+                <input class="form-control" type="file" name="image" accept="image/*">
+            </div>
+
+            <!-- PREVIEW IMAGE -->
+            <div class="text-center mb-3">
+                <img src="{{ product[4] | img(product[1], product[5]) }}" width="200" class="rounded-4 shadow-sm" alt="Current image">
+            </div>
+
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('admin') }}" class="btn btn-outline-secondary w-50">Cancel</a>
+                <button class="btn btn-brand w-50">Update Product</button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+{% endblock %}

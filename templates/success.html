@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Order placed{% endblock %}
+
+{% block content %}
+<div class="container mt-5 text-center" style="max-width: 560px;">
+    <div class="card shadow p-5">
+        <div class="success-tick mb-3"><i class="fa-solid fa-check"></i></div>
+        <h2 class="mb-2">Order Placed!</h2>
+        <p class="text-muted">Thank you for shopping with ShopEase.</p>
+
+        <table class="table table-sm text-start my-4">
+            <tr><th>Order ID</th><td class="text-end"><code>{{ order.ref }}</code></td></tr>
+            <tr><th>Amount</th><td class="text-end">₹{{ '{:,.2f}'.format(order.amount) }}</td></tr>
+            <tr><th>Payment</th><td class="text-end">{{ order.method }}</td></tr>
+        </table>
+
+        <div class="d-flex gap-2 justify-content-center">
+            <a href="{{ url_for('orders') }}" class="btn btn-brand">View my orders</a>
+            <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">Continue Shopping</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
